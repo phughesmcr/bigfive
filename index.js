@@ -1,6 +1,6 @@
 /**
  * bigfive
- * v0.0.1
+ * v0.1.0
  *
  * Analyse Big Five personality traits from strings.
  *
@@ -62,18 +62,20 @@
   */
   const getMatches = (arr, lexicon) => {
     let matches = {}
-
     // loop through the lexicon categories
-    for (let cat in lexicon) {
+    let cat
+    for (cat in lexicon) {
       if (!lexicon.hasOwnProperty(cat)) continue
       let match = []
       // loop through words in category
-      for (let key in lexicon[cat]) {
-        if (!lexicon[cat].hasOwnProperty(key)) continue
-        let weight = lexicon[cat][key]
+      let key
+      let data = lexicon[cat]
+      for (key in data) {
+        if (!data.hasOwnProperty(key)) continue
         // if word from input matches word from lexicon ...
         if (arr.indexOf(key) > -1) {
           let item
+          let weight = data[key]
           let reps = arr.indexesOf(key).length // numbder of times the word appears in the input text
           if (reps > 1) { // if the word appears more than once, group all appearances in one array
             let words = []
@@ -89,7 +91,6 @@
       }
       matches[cat] = match
     }
-
     // return matches object
     return matches
   }
@@ -105,9 +106,9 @@
   const calcLex = (obj, wc, enc, int) => {
     let counts = []   // number of matched objects
     let weights = []  // weights of matched objects
-
     // loop through the matches and get the word frequency (counts) and weights
-    for (let key in obj) {
+    let key
+    for (key in obj) {
       if (!obj.hasOwnProperty(key)) continue
       if (Array.isArray(obj[key][0])) { // if the first item in the match is an array, the item is a duplicate
         counts.push(obj[key][0].length) // for duplicate matches
@@ -116,54 +117,39 @@
       }
       weights.push(obj[key][1])         // corresponding weight
     }
-
     // calculate lexical usage value
-    let sums = []
+    let lex = 0
     counts.forEach(function (a, b) {
-      let sum
       if (enc === 'frequency') {
         // (word frequency / total word count) * weight
-        sum = (a / wc) * weights[b]
+        lex += (a / wc) * weights[b]
       } else {
         // weight + weight + weight etc
-        sum = weights[b]
+        lex += weights[b]
       }
-      sums.push(sum)
     })
-
-    // get sum of values
-    let lex
-    lex = sums.reduce(function (a, b) { return a + b }, 0)
-
-    // add the intercept value
-    lex = Number(lex) + Number(int)
-
-    // return final lexical value
-    return lex
+    // return final lexical value + intercept
+    return lex + int
   }
 
   const bigfive = (str, enc) => {
     // return null if no string
     if (str == null) return null
-
+    // make sure str is a string
+    if (typeof str !== 'string') str = str.toString()
+    // trim whitespace and convert to lowercase
     str = str.toLowerCase().trim()
-
     // option defaults
     if (enc == null) enc = 'binary'
     enc = enc || 'binary'
-
     // convert our string to tokens
     const tokens = tokenizer(str)
-
     // return null on no tokens
     if (tokens == null) return null
-
     // get matches from array
     const matches = getMatches(tokens, lexicon)
-
     // get wordcount
     const wordcount = tokens.length
-
     // calculate lexical useage
     let ocean = {}
     ocean.O = calcLex(matches.O, wordcount, enc, 0)
@@ -171,7 +157,6 @@
     ocean.E = calcLex(matches.E, wordcount, enc, 0)
     ocean.A = calcLex(matches.A, wordcount, enc, 0)
     ocean.N = calcLex(matches.N, wordcount, enc, 0)
-
     // return wellbeing object
     return ocean
   }

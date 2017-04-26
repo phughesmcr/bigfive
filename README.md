@@ -31,6 +31,7 @@ Frequency takes into account the numbers of times a word is matched, i.e. "X" wa
   N: 0.0000849375
 }
 ```
+Errors output null
 
 ## Acknowledgements
 
