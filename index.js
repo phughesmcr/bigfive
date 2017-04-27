@@ -128,8 +128,10 @@
         lex += weights[b]
       }
     })
+    // add int
+    lex = lex + int
     // return final lexical value + intercept
-    return lex + int
+    return lex
   }
 
   const bigfive = (str, enc) => {

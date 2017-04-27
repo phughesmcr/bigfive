@@ -1,6 +1,6 @@
 {
   "name": "bigfive",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Analyse Big Five personality traits from strings.",
   "main": "index.js",
   "dependencies": {
@@ -21,9 +21,9 @@
   ],
   "author": "P. Hughes <peter@phugh.es> (http://www.phugh.es)",
   "license": "CC-BY-NC-SA-3.0",
-  "homepage": "https://github.com/phugh/wellbeing_analysis",
+  "homepage": "https://github.com/phugh/bigfive",
   "repository": {
     "type": "git",
-    "url": "https://github.com/phugh/wellbeing_analysis"
+    "url": "https://github.com/phugh/bigfive"
   }
 }
