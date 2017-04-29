@@ -1,6 +1,6 @@
 /**
  * bigfive
- * v0.1.0
+ * v0.1.2
  *
  * Analyse Big Five personality traits from strings.
  *
@@ -119,31 +119,38 @@
     }
     // calculate lexical usage value
     let lex = 0
-    counts.forEach(function (a, b) {
+    let i
+    let len = counts.length
+    for (i = 0; i < len; i++) {
       if (enc === 'frequency') {
         // (word frequency / total word count) * weight
-        lex += (a / wc) * weights[b]
+        lex += (counts[i] / wc) * weights[i]
       } else {
         // weight + weight + weight etc
-        lex += weights[b]
+        lex += weights[i]
       }
-    })
-    // add int
-    lex = lex + int
+    }
+    // add intercept value
+    lex += int
     // return final lexical value + intercept
     return lex
   }
 
+  /**
+  * @function bigfive
+  * @param  {string} str {input string}
+  * @param  {string} enc {encoding string: 'binary' or 'frequency'}
+  * @return {object}     {object of lexical values}
+  */
   const bigfive = (str, enc) => {
     // return null if no string
-    if (str == null) return null
+    if (str == null) return { O: 0, C: 0, E: 0, A: 0, N: 0 }
     // make sure str is a string
     if (typeof str !== 'string') str = str.toString()
     // trim whitespace and convert to lowercase
     str = str.toLowerCase().trim()
     // option defaults
     if (enc == null) enc = 'binary'
-    enc = enc || 'binary'
     // convert our string to tokens
     const tokens = tokenizer(str)
     // return null on no tokens
