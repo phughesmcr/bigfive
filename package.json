@@ -1,7 +1,7 @@
 {
   "name": "bigfive",
-  "version": "0.1.2",
-  "description": "Analyse Big Five personality traits from strings.",
+  "version": "0.1.3",
+  "description": "Analyse the Big Five personality traits from strings.",
   "main": "index.js",
   "dependencies": {
     "happynodetokenizer": "^0.1.0"

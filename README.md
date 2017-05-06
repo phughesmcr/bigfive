@@ -1,6 +1,6 @@
 # bigfive - Node.js based Big Five Personality Assessment
 
-Analyse Big Five personality traits from strings.
+Analyse the Big Five personality traits from strings.
 
 ## Usage
 ```Javascript
@@ -24,14 +24,15 @@ Frequency takes into account the numbers of times a word is matched, i.e. "X" wa
 
 ## Output Example
 ```Javascript
-{ O: 0.005491229166666666,
+{
+  O: 0.005491229166666666,
   C: 0.00017221874999999998,
   E: -0.003090625,
   A: 0.00015628124999999998,
   N: 0.0000849375
 }
 ```
-Errors output null
+Errors output 0s
 
 ## Acknowledgements
 

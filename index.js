@@ -1,6 +1,6 @@
 /**
  * bigfive
- * v0.1.2
+ * v0.1.3
  *
  * Analyse Big Five personality traits from strings.
  *
@@ -17,13 +17,13 @@
  * Usage example:
  * const b5 = require('bigfive');
  * const text = "A big long string of text...";
- * const encoding = 'binary' // 'binary' or 'frequency'
+ * const encoding = 'binary'  // 'binary' or 'frequency'
  * let personality = b5(text, encoding);
  * console.log(personality)
  *
- * @param {string} str  {input string}
- * @param {string} enc {encoding - 'binary' or 'frequency'}
- * @return {object} {object of Big 5 values}
+ * @param {string} str  input string
+ * @param {string} enc  encoding - 'binary' or 'frequency'
+ * @return {Object} object with O,C,E,A,N keys
  */
 
 'use strict'
@@ -45,8 +45,9 @@
 
   // get number of times el appears in an array
   Array.prototype.indexesOf = function (el) {
-    var idxs = []
-    for (var i = this.length - 1; i >= 0; i--) {
+    const idxs = []
+    let i = this.length - 1
+    for (i; i >= 0; i--) {
       if (this[i] === el) {
         idxs.unshift(i)
       }
@@ -56,12 +57,12 @@
 
   /**
   * @function getMatches
-  * @param  {arr} arr       {token array}
-  * @param  {obj} lexicon   {lexicon object}
-  * @return {object} {object of matches}
+  * @param  {Array} arr token array
+  * @param  {Object} lexicon  lexicon object
+  * @return {Object}  object of matches
   */
   const getMatches = (arr, lexicon) => {
-    let matches = {}
+    const matches = {}
     // loop through the lexicon categories
     let cat
     for (cat in lexicon) {
@@ -97,15 +98,15 @@
 
   /**
   * @function calcLex
-  * @param  {object} obj      {matches object}
-  * @param  {number} wc       {wordcount}
-  * @param  {string} encoding {word encoding: 'binary' or 'frequency'}
-  * @param  {number} int      {intercept value}
-  * @return {number} {lexical value}
+  * @param  {Object} obj      matches object
+  * @param  {number} wc       wordcount
+  * @param  {string} encoding word encoding: 'binary' or 'frequency'
+  * @param  {number} int      intercept value
+  * @return {number} lexical value
   */
   const calcLex = (obj, wc, enc, int) => {
-    let counts = []   // number of matched objects
-    let weights = []  // weights of matched objects
+    const counts = []   // number of matched objects
+    const weights = []  // weights of matched objects
     // loop through the matches and get the word frequency (counts) and weights
     let key
     for (key in obj) {
@@ -120,27 +121,30 @@
     // calculate lexical usage value
     let lex = 0
     let i
-    let len = counts.length
+    const len = counts.length
+    const words = Number(wc)
     for (i = 0; i < len; i++) {
+      let weight = Number(weights[i])
       if (enc === 'frequency') {
+        let count = Number(counts[i])
         // (word frequency / total word count) * weight
-        lex += (counts[i] / wc) * weights[i]
+        lex += (count / words) * weight
       } else {
         // weight + weight + weight etc
-        lex += weights[i]
+        lex += weight
       }
     }
     // add intercept value
-    lex += int
+    lex += Number(int)
     // return final lexical value + intercept
-    return lex
+    return Number(lex)
   }
 
   /**
   * @function bigfive
-  * @param  {string} str {input string}
-  * @param  {string} enc {encoding string: 'binary' or 'frequency'}
-  * @return {object}     {object of lexical values}
+  * @param  {string} str input string
+  * @param  {string} enc encoding string: 'binary' or 'frequency'
+  * @return {Object}  object of lexical values
   */
   const bigfive = (str, enc) => {
     // return null if no string
@@ -154,7 +158,7 @@
     // convert our string to tokens
     const tokens = tokenizer(str)
     // return null on no tokens
-    if (tokens == null) return null
+    if (tokens == null) return { O: 0, C: 0, E: 0, A: 0, N: 0 }
     // get matches from array
     const matches = getMatches(tokens, lexicon)
     // get wordcount
