@@ -6,8 +6,12 @@ Analyse the Big Five personality traits from strings.
 ```Javascript
 const b5 = require('bigfive');
 const text = "A big long string of text...";
-const encoding = 'binary' // 'binary' or 'frequency'
-let personality = b5(text, encoding);
+const opts = {
+  "encoding": 'binary', // 'binary' (default) or 'frequency'
+  "bigrams": true,      // match against bigrams in lexicon (not recommended for large strings)
+  "trigrams": true      // match against trigrams in lexicon (not recommended for large strings)
+}
+let personality = b5(text, opts);
 console.log(personality)
 ```
 
