@@ -24,7 +24,13 @@ Errors return null
 
 Binary counts matches as booleans, i.e. 1 = matched at least once, 0 = not matched.
 
+Binary is simply a sum of weights from the lexicon, i.e. weight[1] + weight[2] + .... etc.
+
 Frequency takes into account the numbers of times a word is matched, i.e. "X" was matched 9 times.
+
+Frequecy uses the equation ((word[1] frequency / total wordcount) * word[1] weight) + ((word[2]..... )) etc.
+
+Unless you have a specific use for frequency encoding, we recommend you use binary only.
 
 ## Output Example
 ```Javascript
@@ -46,5 +52,6 @@ Using the Big Five lexica from http://www.wwbp.org/data.html
 Used under the Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported licence
 
 ## Licence
-(C) 2017 P. Hughes
+(C) 2017 [P. Hughes](www.phugh.es)
+
 [Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported](http://creativecommons.org/licenses/by-nc-sa/3.0/)

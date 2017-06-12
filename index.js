@@ -1,6 +1,6 @@
 /**
  * bigfive
- * v0.2.0
+ * v0.2.1
  *
  * Analyse Big Five personality traits from strings.
  *
@@ -17,7 +17,6 @@
  * Usage example:
  * const b5 = require('bigfive');
  * const text = "A big long string of text...";
- * const encoding = 'binary'  // 'binary' or 'frequency'
  * const opts = {
  *  "encoding": 'binary', // 'binary' (default) or 'frequency'
  *  "bigrams": true,      // match against bigrams in lexicon (not recommended for large strings)
@@ -36,17 +35,16 @@
   const root = this
   const previous = root.bigfive
 
-  let tokenizer = root.tokenizer
   let lexicon = root.lexicon
   let natural = root.natural
+  let tokenizer = root.tokenizer
 
-  if (typeof tokenizer === 'undefined') {
-    const hasRequire = typeof require !== 'undefined'
-    if (hasRequire) {
+  if (typeof lexicon === 'undefined') {
+    if (typeof require !== 'undefined') {
       tokenizer = require('happynodetokenizer')
       lexicon = require('./data/lexicon.json')
       natural = require('natural')
-    } else throw new Error('bigfive required happynodetokenizer and lexica.')
+    } else throw new Error('bigfive requires node modules happynodetokenizer and natural, and ./data/lexicon.json')
   }
 
   // get number of times el appears in an array
@@ -62,15 +60,15 @@
   }
 
   /**
+  * Get all the bigrams of a string and return as an array
   * @function getBigrams
-  * @param  {string} str input string
+  * @param {string} str input string
   * @return {Array} array of bigram strings
   */
   const getBigrams = str => {
-    const NGrams = natural.NGrams
-    const bigrams = NGrams.bigrams(str)
-    const result = []
+    const bigrams = natural.NGrams.bigrams(str)
     const len = bigrams.length
+    const result = []
     let i = 0
     for (i; i < len; i++) {
       result.push(bigrams[i].join(' '))
@@ -79,15 +77,15 @@
   }
 
   /**
+  * Get all the trigrams of a string and return as an array
   * @function getTrigrams
-  * @param  {string} str input string
+  * @param {string} str input string
   * @return {Array} array of trigram strings
   */
   const getTrigrams = str => {
-    const NGrams = natural.NGrams
-    const trigrams = NGrams.trigrams(str)
-    const result = []
+    const trigrams = natural.NGrams.trigrams(str)
     const len = trigrams.length
+    const result = []
     let i = 0
     for (i; i < len; i++) {
       result.push(trigrams[i].join(' '))
@@ -96,10 +94,11 @@
   }
 
   /**
+  * Match an array against a lexicon object
   * @function getMatches
-  * @param  {Array} arr token array
-  * @param  {Object} lexicon  lexicon object
-  * @return {Object}  object of matches
+  * @param {Array} arr token array
+  * @param {Object} lexicon lexicon object
+  * @return {Object} object of matches
   */
   const getMatches = (arr, lexicon) => {
     const matches = {}
@@ -110,22 +109,22 @@
       let match = []
       // loop through words in category
       let data = lexicon[category]
-      let key
-      for (key in data) {
-        if (!data.hasOwnProperty(key)) continue
+      let word
+      for (word in data) {
+        if (!data.hasOwnProperty(word)) continue
         // if word from input matches word from lexicon ...
-        if (arr.indexOf(key) > -1) {
+        if (arr.indexOf(word) > -1) {
           let item
-          let weight = data[key]
-          let reps = arr.indexesOf(key).length // numbder of times the word appears in the input text
+          let weight = data[word]
+          let reps = arr.indexesOf(word).length // number of times the word appears in the input text
           if (reps > 1) { // if the word appears more than once, group all appearances in one array
             let words = []
             for (let i = 0; i < reps; i++) {
-              words.push(key)
+              words.push(word)
             }
-            item = [words, weight]
+            item = [words, weight]  // i.e. [[word, word, word], weight]
           } else {
-            item = [key, weight]
+            item = [word, weight]   // i.e. [word, weight]
           }
           match.push(item)
         }
@@ -138,10 +137,10 @@
 
   /**
   * @function calcLex
-  * @param  {Object} obj      matches object
-  * @param  {number} wc       wordcount
-  * @param  {string} encoding word encoding: 'binary' or 'frequency'
-  * @param  {number} int      intercept value
+  * @param {Object} obj matches object
+  * @param {number} wc wordcount
+  * @param {string} encoding word encoding: 'binary' or 'frequency'
+  * @param {number} int intercept value
   * @return {number} lexical value
   */
   const calcLex = (obj, wc, enc, int) => {
@@ -160,15 +159,14 @@
     }
     // calculate lexical usage value
     let lex = 0
-    let i
+    let i = 0
     const len = counts.length
-    const words = Number(wc)
-    for (i = 0; i < len; i++) {
+    for (i; i < len; i++) {
       let weight = Number(weights[i])
       if (enc === 'frequency') {
         let count = Number(counts[i])
         // (word frequency / total word count) * weight
-        lex += (count / words) * weight
+        lex += (count / wc) * weight
       } else {
         // weight + weight + weight etc
         lex += weight
@@ -182,9 +180,9 @@
 
   /**
   * @function bigfive
-  * @param  {string} str input string
-  * @param  {Object} opts options object
-  * @return {Object}  object of lexical values
+  * @param {string} str input string
+  * @param {Object} opts options object
+  * @return {Object} object of lexical values
   */
   const bigfive = (str, opts) => {
     // return null if no string
@@ -196,7 +194,7 @@
     // option defaults
     if (opts == null) {
       opts = {
-        'encoding': 'binary',    // lexicon to analyse against
+        'encoding': 'binary', // lexicon to analyse against
         'bigrams': true,      // match bigrams?
         'trigrams': true      // match trigrams?
       }
