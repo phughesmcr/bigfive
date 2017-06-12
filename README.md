@@ -25,14 +25,14 @@ Frequency takes into account the numbers of times a word is matched, i.e. "X" wa
 ## Output Example
 ```Javascript
 {
-  O: 0.005491229166666666,
-  C: 0.00017221874999999998,
-  E: -0.003090625,
-  A: 0.00015628124999999998,
-  N: 0.0000849375
+  O: 0.5491229166666666,
+  C: 0.017221874999999998,
+  E: -0.3090625,
+  A: 0.015628124999999998,
+  N: 0.00849375
 }
 ```
-Errors output 0s
+Errors return null
 
 ## Acknowledgements
 

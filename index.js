@@ -1,6 +1,6 @@
 /**
  * bigfive
- * v0.1.3
+ * v0.2.0
  *
  * Analyse Big Five personality traits from strings.
  *
@@ -18,11 +18,16 @@
  * const b5 = require('bigfive');
  * const text = "A big long string of text...";
  * const encoding = 'binary'  // 'binary' or 'frequency'
- * let personality = b5(text, encoding);
+ * const opts = {
+ *  "encoding": 'binary', // 'binary' (default) or 'frequency'
+ *  "bigrams": true,      // match against bigrams in lexicon (not recommended for large strings)
+ *  "trigrams": true      // match against trigrams in lexicon (not recommended for large strings)
+ * }
+ * const personality = b5(text, opts);
  * console.log(personality)
  *
  * @param {string} str  input string
- * @param {string} enc  encoding - 'binary' or 'frequency'
+ * @param {Object} opts options object
  * @return {Object} object with O,C,E,A,N keys
  */
 
@@ -31,15 +36,16 @@
   const root = this
   const previous = root.bigfive
 
-  const hasRequire = typeof require !== 'undefined'
-
   let tokenizer = root.tokenizer
   let lexicon = root.lexicon
+  let natural = root.natural
 
-  if (typeof _ === 'undefined') {
+  if (typeof tokenizer === 'undefined') {
+    const hasRequire = typeof require !== 'undefined'
     if (hasRequire) {
       tokenizer = require('happynodetokenizer')
       lexicon = require('./data/lexicon.json')
+      natural = require('natural')
     } else throw new Error('bigfive required happynodetokenizer and lexica.')
   }
 
@@ -56,6 +62,40 @@
   }
 
   /**
+  * @function getBigrams
+  * @param  {string} str input string
+  * @return {Array} array of bigram strings
+  */
+  const getBigrams = str => {
+    const NGrams = natural.NGrams
+    const bigrams = NGrams.bigrams(str)
+    const result = []
+    const len = bigrams.length
+    let i = 0
+    for (i; i < len; i++) {
+      result.push(bigrams[i].join(' '))
+    }
+    return result
+  }
+
+  /**
+  * @function getTrigrams
+  * @param  {string} str input string
+  * @return {Array} array of trigram strings
+  */
+  const getTrigrams = str => {
+    const NGrams = natural.NGrams
+    const trigrams = NGrams.trigrams(str)
+    const result = []
+    const len = trigrams.length
+    let i = 0
+    for (i; i < len; i++) {
+      result.push(trigrams[i].join(' '))
+    }
+    return result
+  }
+
+  /**
   * @function getMatches
   * @param  {Array} arr token array
   * @param  {Object} lexicon  lexicon object
@@ -64,13 +104,13 @@
   const getMatches = (arr, lexicon) => {
     const matches = {}
     // loop through the lexicon categories
-    let cat
-    for (cat in lexicon) {
-      if (!lexicon.hasOwnProperty(cat)) continue
+    let category
+    for (category in lexicon) {
+      if (!lexicon.hasOwnProperty(category)) continue
       let match = []
       // loop through words in category
+      let data = lexicon[category]
       let key
-      let data = lexicon[cat]
       for (key in data) {
         if (!data.hasOwnProperty(key)) continue
         // if word from input matches word from lexicon ...
@@ -90,7 +130,7 @@
           match.push(item)
         }
       }
-      matches[cat] = match
+      matches[category] = match
     }
     // return matches object
     return matches
@@ -135,41 +175,58 @@
       }
     }
     // add intercept value
-    lex += Number(int)
-    // return final lexical value + intercept
-    return Number(lex)
+    lex += int
+    // return final lexical value
+    return lex
   }
 
   /**
   * @function bigfive
   * @param  {string} str input string
-  * @param  {string} enc encoding string: 'binary' or 'frequency'
+  * @param  {Object} opts options object
   * @return {Object}  object of lexical values
   */
-  const bigfive = (str, enc) => {
+  const bigfive = (str, opts) => {
     // return null if no string
-    if (str == null) return { O: 0, C: 0, E: 0, A: 0, N: 0 }
+    if (str == null) return null
     // make sure str is a string
     if (typeof str !== 'string') str = str.toString()
     // trim whitespace and convert to lowercase
     str = str.toLowerCase().trim()
     // option defaults
-    if (enc == null) enc = 'binary'
+    if (opts == null) {
+      opts = {
+        'encoding': 'binary',    // lexicon to analyse against
+        'bigrams': true,      // match bigrams?
+        'trigrams': true      // match trigrams?
+      }
+    }
+    opts.lang = opts.encoding || 'binary'
     // convert our string to tokens
-    const tokens = tokenizer(str)
+    let tokens = tokenizer(str)
     // return null on no tokens
-    if (tokens == null) return { O: 0, C: 0, E: 0, A: 0, N: 0 }
+    if (tokens == null || tokens.length === 0) return { O: 0, C: 0, E: 0, A: 0, N: 0 }
+    // get wordcount before we add bigrams and trigrams
+    const wordcount = tokens.length
+    // handle bigrams if wanted
+    if (opts.bigrams) {
+      const bigrams = getBigrams(str)
+      tokens = tokens.concat(bigrams)
+    }
+    // handle trigrams if wanted
+    if (opts.trigrams) {
+      const trigrams = getTrigrams(str)
+      tokens = tokens.concat(trigrams)
+    }
     // get matches from array
     const matches = getMatches(tokens, lexicon)
-    // get wordcount
-    const wordcount = tokens.length
     // calculate lexical useage
     let ocean = {}
-    ocean.O = calcLex(matches.O, wordcount, enc, 0)
-    ocean.C = calcLex(matches.C, wordcount, enc, 0)
-    ocean.E = calcLex(matches.E, wordcount, enc, 0)
-    ocean.A = calcLex(matches.A, wordcount, enc, 0)
-    ocean.N = calcLex(matches.N, wordcount, enc, 0)
+    ocean.O = calcLex(matches.O, wordcount, opts.encoding, 0)
+    ocean.C = calcLex(matches.C, wordcount, opts.encoding, 0)
+    ocean.E = calcLex(matches.E, wordcount, opts.encoding, 0)
+    ocean.A = calcLex(matches.A, wordcount, opts.encoding, 0)
+    ocean.N = calcLex(matches.N, wordcount, opts.encoding, 0)
     // return wellbeing object
     return ocean
   }
