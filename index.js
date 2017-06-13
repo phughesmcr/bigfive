@@ -1,6 +1,6 @@
 /**
  * bigfive
- * v0.2.1
+ * v0.3.0
  *
  * Analyse Big Five personality traits from strings.
  *
@@ -16,17 +16,11 @@
  *
  * Usage example:
  * const b5 = require('bigfive');
- * const text = "A big long string of text...";
- * const opts = {
- *  "encoding": 'binary', // 'binary' (default) or 'frequency'
- *  "bigrams": true,      // match against bigrams in lexicon (not recommended for large strings)
- *  "trigrams": true      // match against trigrams in lexicon (not recommended for large strings)
- * }
- * const personality = b5(text, opts);
+ * const str = "A big long string of text...";
+ * const personality = b5(str);
  * console.log(personality)
  *
- * @param {string} str  input string
- * @param {Object} opts options object
+ * @param {string} str input string
  * @return {Object} object with O,C,E,A,N keys
  */
 
@@ -41,13 +35,13 @@
 
   if (typeof lexicon === 'undefined') {
     if (typeof require !== 'undefined') {
-      tokenizer = require('happynodetokenizer')
       lexicon = require('./data/lexicon.json')
       natural = require('natural')
+      tokenizer = require('happynodetokenizer')
     } else throw new Error('bigfive requires node modules happynodetokenizer and natural, and ./data/lexicon.json')
   }
 
-  // get number of times el appears in an array
+  // Find how many times an element appears in an array
   Array.prototype.indexesOf = function (el) {
     const idxs = []
     let i = this.length - 1
@@ -60,171 +54,103 @@
   }
 
   /**
-  * Get all the bigrams of a string and return as an array
-  * @function getBigrams
+  * Get all the n-grams of a string and return as an array
+  * @function getNGrams
   * @param {string} str input string
-  * @return {Array} array of bigram strings
+  * @param {number} n abitrary n-gram number, e.g. 2 = bigrams
+  * @return {Array} array of ngram strings
   */
-  const getBigrams = str => {
-    const bigrams = natural.NGrams.bigrams(str)
-    const len = bigrams.length
+  const getNGrams = (str, n) => {
+    // default to bi-grams on null n
+    if (n == null) n = 2
+    if (typeof n !== 'number') n = Number(n)
+    const ngrams = natural.NGrams.ngrams(str, n)
+    const len = ngrams.length
     const result = []
     let i = 0
     for (i; i < len; i++) {
-      result.push(bigrams[i].join(' '))
+      result.push(ngrams[i].join(' '))
     }
     return result
   }
 
   /**
-  * Get all the trigrams of a string and return as an array
-  * @function getTrigrams
-  * @param {string} str input string
-  * @return {Array} array of trigram strings
-  */
-  const getTrigrams = str => {
-    const trigrams = natural.NGrams.trigrams(str)
-    const len = trigrams.length
-    const result = []
-    let i = 0
-    for (i; i < len; i++) {
-      result.push(trigrams[i].join(' '))
-    }
-    return result
-  }
-
-  /**
-  * Match an array against a lexicon object
+  * Loop through lexicon and match against array
   * @function getMatches
-  * @param {Array} arr token array
-  * @param {Object} lexicon lexicon object
+  * @param  {Array} arr token array
   * @return {Object} object of matches
   */
-  const getMatches = (arr, lexicon) => {
+  const getMatches = arr => {
+    // error prevention
+    if (arr == null) return null
+    // loop through categories in lexicon
     const matches = {}
-    // loop through the lexicon categories
     let category
     for (category in lexicon) {
       if (!lexicon.hasOwnProperty(category)) continue
       let match = []
-      // loop through words in category
-      let data = lexicon[category]
       let word
+      let data = lexicon[category]
+      // loop through words in category
       for (word in data) {
         if (!data.hasOwnProperty(word)) continue
+        let weight = data[word]
         // if word from input matches word from lexicon ...
         if (arr.indexOf(word) > -1) {
-          let item
-          let weight = data[word]
-          let reps = arr.indexesOf(word).length // number of times the word appears in the input text
-          if (reps > 1) { // if the word appears more than once, group all appearances in one array
-            let words = []
-            for (let i = 0; i < reps; i++) {
-              words.push(word)
-            }
-            item = [words, weight]  // i.e. [[word, word, word], weight]
-          } else {
-            item = [word, weight]   // i.e. [word, weight]
-          }
-          match.push(item)
+          let count = arr.indexesOf(word).length // number of times the word appears in the input text
+          match.push([word, count, weight])
         }
       }
       matches[category] = match
     }
-    // return matches object
     return matches
   }
 
   /**
+  * Calculate the total lexical value of matches
   * @function calcLex
   * @param {Object} obj matches object
-  * @param {number} wc wordcount
-  * @param {string} encoding word encoding: 'binary' or 'frequency'
-  * @param {number} int intercept value
   * @return {number} lexical value
   */
-  const calcLex = (obj, wc, enc, int) => {
-    const counts = []   // number of matched objects
-    const weights = []  // weights of matched objects
-    // loop through the matches and get the word frequency (counts) and weights
-    let key
-    for (key in obj) {
-      if (!obj.hasOwnProperty(key)) continue
-      if (Array.isArray(obj[key][0])) { // if the first item in the match is an array, the item is a duplicate
-        counts.push(obj[key][0].length) // for duplicate matches
-      } else {
-        counts.push(1)                  // for non-duplicates
-      }
-      weights.push(obj[key][1])         // corresponding weight
-    }
-    // calculate lexical usage value
+  const calcLex = obj => {
+    if (obj == null) return null
     let lex = 0
-    let i = 0
-    const len = counts.length
-    for (i; i < len; i++) {
-      let weight = Number(weights[i])
-      if (enc === 'frequency') {
-        let count = Number(counts[i])
-        // (word frequency / total word count) * weight
-        lex += (count / wc) * weight
-      } else {
-        // weight + weight + weight etc
-        lex += weight
-      }
+    let word
+    for (word in obj) {
+      if (!obj.hasOwnProperty(word)) continue
+      // weight + weight + weight etc
+      lex += Number(obj[word][2])
     }
-    // add intercept value
-    lex += int
-    // return final lexical value
     return lex
   }
 
   /**
   * @function bigfive
   * @param {string} str input string
-  * @param {Object} opts options object
   * @return {Object} object of lexical values
   */
-  const bigfive = (str, opts) => {
-    // return null if no string
+  const bigfive = str => {
+    // error prevention
     if (str == null) return null
-    // make sure str is a string
     if (typeof str !== 'string') str = str.toString()
     // trim whitespace and convert to lowercase
     str = str.toLowerCase().trim()
-    // option defaults
-    if (opts == null) {
-      opts = {
-        'encoding': 'binary', // lexicon to analyse against
-        'bigrams': true,      // match bigrams?
-        'trigrams': true      // match trigrams?
-      }
-    }
-    opts.lang = opts.encoding || 'binary'
     // convert our string to tokens
     let tokens = tokenizer(str)
     // return null on no tokens
-    if (tokens == null || tokens.length === 0) return { O: 0, C: 0, E: 0, A: 0, N: 0 }
-    // get wordcount before we add bigrams and trigrams
-    const wordcount = tokens.length
-    // handle bigrams if wanted
-    if (opts.bigrams) {
-      const bigrams = getBigrams(str)
-      tokens = tokens.concat(bigrams)
-    }
-    // handle trigrams if wanted
-    if (opts.trigrams) {
-      const trigrams = getTrigrams(str)
-      tokens = tokens.concat(trigrams)
-    }
+    if (tokens == null) return null
+    const bigrams = getNGrams(str, 2)
+    const trigrams = getNGrams(str, 3)
+    tokens = tokens.concat(bigrams, trigrams)
     // get matches from array
     const matches = getMatches(tokens, lexicon)
     // calculate lexical useage
     let ocean = {}
-    ocean.O = calcLex(matches.O, wordcount, opts.encoding, 0)
-    ocean.C = calcLex(matches.C, wordcount, opts.encoding, 0)
-    ocean.E = calcLex(matches.E, wordcount, opts.encoding, 0)
-    ocean.A = calcLex(matches.A, wordcount, opts.encoding, 0)
-    ocean.N = calcLex(matches.N, wordcount, opts.encoding, 0)
+    ocean.O = calcLex(matches.O)
+    ocean.C = calcLex(matches.C)
+    ocean.E = calcLex(matches.E)
+    ocean.A = calcLex(matches.A)
+    ocean.N = calcLex(matches.N)
     // return wellbeing object
     return ocean
   }
