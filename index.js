@@ -1,6 +1,6 @@
 /**
  * bigfive
- * v0.3.0
+ * v0.3.1
  *
  * Analyse Big Five personality traits from strings.
  *
@@ -41,12 +41,12 @@
     } else throw new Error('bigfive requires node modules happynodetokenizer and natural, and ./data/lexicon.json')
   }
 
-  // Find how many times an element appears in an array
-  Array.prototype.indexesOf = function (el) {
+  // get number of times el appears in an array
+  function indexesOf (arr, el) {
     const idxs = []
-    let i = this.length - 1
+    let i = arr.length - 1
     for (i; i >= 0; i--) {
-      if (this[i] === el) {
+      if (arr[i] === el) {
         idxs.unshift(i)
       }
     }
@@ -97,7 +97,7 @@
         let weight = data[word]
         // if word from input matches word from lexicon ...
         if (arr.indexOf(word) > -1) {
-          let count = arr.indexesOf(word).length // number of times the word appears in the input text
+          let count = indexesOf(arr, word).length // number of times the word appears in the input text
           match.push([word, count, weight])
         }
       }
