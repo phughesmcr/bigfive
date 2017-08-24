@@ -1,0 +1,16 @@
+{
+  "extends": "google",
+  "parserOptions": {
+      "ecmaVersion": 6
+  },
+  "env": {
+    "node": true,
+    "es6": true
+  },
+  "globals": {},
+  "rules": {
+    "no-trailing-spaces": 0,
+    "semi": [2, "always"],
+    "no-eq-null": 2
+  }
+}
