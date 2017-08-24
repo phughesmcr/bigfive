@@ -1,6 +1,6 @@
 /**
  * bigFive
- * v1.0.0-rc.1
+ * v1.0.0-rc.2
  *
  * Analyse the Five Factor Model ("Big Five") personality traits from strings.
  *
@@ -22,8 +22,8 @@
  *  'min': Number.NEGATIVE_INFINITY,
  *  'nGrams': true,
  *  'output': 'ocean',
- *  'places': 16,
- *  'sortBy': 'lex',
+ *  'places': 9,
+ *  'sortBy': 'freq',
  *  'wcGrams': false,
  * };
  * const string = 'A big long string of text...';
@@ -85,8 +85,8 @@
         'min': Number.NEGATIVE_INFINITY,
         'nGrams': true,
         'output': 'ocean',
-        'places': 16,
-        'sortBy': 'lex',
+        'places': 9,
+        'sortBy': 'freq',
         'wcGrams': false,
       };
     }
@@ -95,8 +95,8 @@
     opts.min = opts.min || Number.NEGATIVE_INFINITY;
     opts.nGrams = opts.nGrams || true;
     opts.output = opts.output || 'ocean';
-    opts.places = opts.places || 16;
-    opts.sortBy = opts.sortBy || 'lex';
+    opts.places = opts.places || 9;
+    opts.sortBy = opts.sortBy || 'freq';
     opts.wcGrams = opts.wcGrams || false;
     const encoding = opts.encoding;
     const output = opts.output;

@@ -1,9 +1,9 @@
-# bigFive - Node.js based Big Five Personality Assessment
+# bigFive - Node.js based Big Five personality assessment!
 
 Analyse the Five Factor Model ("Big Five") personality traits from strings.
 
 ## Usage
-```Javascript
+```javascript
 const bf = require('bigfive');
 const opts = {   // These are the default options
  'encoding': 'binary',
@@ -11,11 +11,11 @@ const opts = {   // These are the default options
  'min': Number.NEGATIVE_INFINITY,
  'nGrams': true,
  'output': 'ocean',
- 'places': 16,
+ 'places': 9,
  'sortBy': 'lex',
  'wcGrams': false,
 };
-const str = "A big long string of text...";
+const str = 'A big long string of text...';
 const personality = bf(str, opts);
 console.log(personality)
 ```
@@ -38,9 +38,9 @@ The options object is optional and provides a number of controls to allow you to
 
 ### 'encoding'
 
-**String - valid options: 'binary' (default), 'freq'**
+**String - valid options: 'binary' (default), or 'freq'**
 
-Controls how the lexical value is calculated.
+Controls how the lexical value is calculated. You probably shouldn't change this!
 
 Binary is simply the addition of lexical weights, i.e. word1 + word2 + word3.
 
@@ -78,15 +78,15 @@ Use the nGrams option to include (true) or exclude (false) n-grams. For accuracy
 
 Number of decimal places to limit outputted values to.
 
-The default is 16 decimal places as this is accuracy level the lexicon data provides.
+The default is 9 decimal places.
 
 ### 'sortBy'
 
-**String - valid options: 'lex' (default), 'weight', or 'freq'**
+**String - valid options: 'freq' (default), 'weight', or 'lex'**
 
 If 'output' = 'matches', this option can be used to control how the outputted array is sorted.
 
-'lex' (default) sorts by final lexical value, (N.B. when using binary encoding [see 'encoding' above] the lexical value and the weight are identical.)
+'lex' (default) sorts by final lexical value, (N.B. when using binary encoding [see 'encoding' above] the lexical value and the weight are identical).
 
 'weight' sorts the array by the matched words initial weight.
 
