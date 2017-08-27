@@ -2,6 +2,8 @@
 
 Analyse the Five Factor Model ("Big Five") personality traits from strings.
 
+Find matches in text for the top 100 words from each of the five domains (see ./data/lexicon.json) and output a weighted lexical value for each.
+
 ## Usage
 ```javascript
 const bf = require('bigfive');
@@ -23,10 +25,10 @@ console.log(personality)
 ## Default Output Example
 ```Javascript
 {
-  O: 0.5491229166666666,
-  C: 0.017221874999999998,
+  O: 0.54912291,
+  C: 0.01722187,
   E: -0.3090625,
-  A: 0.015628124999999998,
+  A: 0.01562812,
   N: 0.00849375
 }
 ```
@@ -74,7 +76,7 @@ Use the nGrams option to include (true) or exclude (false) n-grams. For accuracy
 
 ### 'places'
 
-**Number - valid options between 0 and 20 inclusive.**
+**Number**
 
 Number of decimal places to limit outputted values to.
 
