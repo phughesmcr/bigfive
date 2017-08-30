@@ -1,12 +1,12 @@
 {
   "name": "bigfive",
-  "version": "1.0.0-rc.3",
+  "version": "1.0.0",
   "description": "Analyse the Five Factor model (Big Five) personality traits from strings.",
   "main": "index.js",
   "dependencies": {
-    "happynodetokenizer": "^0.2.0",
-    "lex-helpers": "^0.0.3",
-    "simplengrams": "^0.1.0"
+    "happynodetokenizer": "0.2.0",
+    "lex-helpers": "0.0.5",
+    "simplengrams": "0.1.0"
   },
   "keywords": [
     "psychology",

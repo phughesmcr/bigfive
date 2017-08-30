@@ -1,6 +1,6 @@
 /**
  * bigFive
- * v1.0.0-rc.3
+ * v1.0.0
  *
  * Analyse the Five Factor Model ("Big Five") personality traits from strings.
  *
@@ -21,7 +21,7 @@
  *  'max': Number.POSITIVE_INFINITY,
  *  'min': Number.NEGATIVE_INFINITY,
  *  'nGrams': true,
- *  'output': 'ocean',
+ *  'output': 'lex',
  *  'places': 9,
  *  'sortBy': 'freq',
  *  'wcGrams': false,
@@ -83,19 +83,18 @@
   /**
    * @function doLex
    * @param  {Object} matches   lexical matches object
-   * @param  {number} int       intercept value
    * @param  {number} places    decimal places limit
    * @param  {string} encoding  type of lexical encoding
    * @param  {number} wordcount total word count
    * @return {Object} lexical values object
    */
-  const doLex = (matches, int, places, encoding, wordcount) => {
+  const doLex = (matches, places, encoding, wordcount) => {
     const values = {};
-    values.O = calcLex(matches.O, int, places, encoding, wordcount);
-    values.C = calcLex(matches.C, int, places, encoding, wordcount);
-    values.E = calcLex(matches.E, int, places, encoding, wordcount);
-    values.A = calcLex(matches.A, int, places, encoding, wordcount);
-    values.N = calcLex(matches.N, int, places, encoding, wordcount);
+    values.O = calcLex(matches.O, 0, places, encoding, wordcount);
+    values.C = calcLex(matches.C, 0, places, encoding, wordcount);
+    values.E = calcLex(matches.E, 0, places, encoding, wordcount);
+    values.A = calcLex(matches.A, 0, places, encoding, wordcount);
+    values.N = calcLex(matches.N, 0, places, encoding, wordcount);
     return values;
   };
 
@@ -144,7 +143,7 @@
     let tokens = tokenizer(str);
     // if there are no tokens return null
     if (!tokens) {
-      console.warn('bigFive: no tokens found. Returned null.');
+      console.warn('bigFive: no tokens found. Returning null.');
       return null;
     }
     // get wordcount before we add ngrams
@@ -163,7 +162,7 @@
     if (output === 'full') {
       // return one object with both matches and values
       ocean.matches = doMatches(matches, sortBy, wordcount, places, encoding);
-      ocean.values = doLex(matches, 0, places, encoding, wordcount);
+      ocean.values = doLex(matches, places, encoding, wordcount);
     } else if (output === 'matches') {
       // return match object if requested
       ocean = doMatches(matches, sortBy, wordcount, places, encoding);
@@ -171,9 +170,9 @@
       // return lexical useage
       if (output !== 'ocean') {
         console.warn('bigFive: output option ("' + output +
-            '") is invalid, defaulting to "ocean".');
+            '") is invalid, defaulting to "lex".');
       }
-      ocean = doLex(matches, 0, places, encoding, wordcount);
+      ocean = doLex(matches, places, encoding, wordcount);
     }
     // return ocean object
     return ocean;

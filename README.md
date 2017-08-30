@@ -66,9 +66,9 @@ Use the nGrams option to include (true) or exclude (false) n-grams. For accuracy
 
 ### 'output'
 
-**String - valid options: 'ocean' (default), 'matches', 'full'**
+**String - valid options: 'lex' (default), 'matches', 'full'**
 
-'ocean' (default) returns an object with O,C,E,A,N keys and lexical value properties - see 'default output example' above.
+'lex' (default) returns an object with O,C,E,A,N keys and lexical value properties - see 'default output example' above.
 
 'matches' returns an object with O,C,E,A,N keys, each with an array of lexical match information within. See 'matches output example' below.
 
@@ -116,7 +116,7 @@ For accuracy it is recommended that this is set to false.
     ],
   C:
     [
-      ....
+      ...
     ],
   ...
 };
