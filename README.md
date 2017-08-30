@@ -11,11 +11,11 @@ const opts = {   // These are the default options
  'encoding': 'binary',
  'max': Number.POSITIVE_INFINITY,
  'min': Number.NEGATIVE_INFINITY,
- 'nGrams': true,
+ 'nGrams': 'true',
  'output': 'ocean',
  'places': 9,
  'sortBy': 'lex',
- 'wcGrams': false,
+ 'wcGrams': 'false',
 };
 const str = 'A big long string of text...';
 const personality = bf(str, opts);
@@ -58,7 +58,7 @@ By default these are set to infinity, ensuring that no words from the lexicon ar
 
 ### 'nGrams'
 
-**Boolean - valid options: true (default) or false**
+**String - valid options: 'true' (default) or 'false'**
 
 n-Grams are contiguous pieces of text, bi-grams being chunks of 2, tri-grams being chunks of 3, etc.
 
@@ -96,7 +96,7 @@ If 'output' = 'matches', this option can be used to control how the outputted ar
 
 ### 'wcGrams'
 
-**Boolean - valid options: true or false (default)**
+**String - valid options: 'true' or 'false' (default)**
 
 When set to true, the output from the nGrams option will be added to the word count.
 
