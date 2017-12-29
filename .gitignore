@@ -1,5 +1,6 @@
 ### Project Specific Ignores
 node_modules/
+.vscode/
 
 ### Ignore OS X Files
 *.DS_Store

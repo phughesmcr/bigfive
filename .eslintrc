@@ -1,5 +1,5 @@
 {
-  "extends": "google",
+  "extends": ["eslint:recommended", "google"],
   "parserOptions": {
       "ecmaVersion": 6
   },
@@ -11,6 +11,7 @@
   "rules": {
     "no-trailing-spaces": 0,
     "semi": [2, "always"],
-    "no-eq-null": 2
+    "no-eq-null": 2,
+    "no-console": 0
   }
 }

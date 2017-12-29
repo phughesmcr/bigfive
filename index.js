@@ -1,6 +1,6 @@
 /**
  * bigFive
- * v1.1.1
+ * v2.0.0
  *
  * Analyse the Five Factor Model ("Big Five") personality traits from strings.
  *
@@ -20,11 +20,11 @@
  *  'encoding': 'binary',
  *  'max': Number.POSITIVE_INFINITY,
  *  'min': Number.NEGATIVE_INFINITY,
- *  'nGrams': 'true',
+ *  'nGrams': [2, 3],
  *  'output': 'lex',
  *  'places': 9,
  *  'sortBy': 'freq',
- *  'wcGrams': 'false',
+ *  'wcGrams': false,
  * };
  * const string = 'A big long string of text...';
  * const personality = bf(string, options);
@@ -37,11 +37,12 @@
  * @return {Object} object with O, C, E, A, N keys
  */
 
-'use strict'
-;(function() {
+(function() {
+  'use strict';
   const global = this;
   const previous = global.bigFive;
 
+  let async = global.async;
   let lexHelpers = global.lexHelpers;
   let lexicon = global.lexicon;
   let simplengrams = global.simplengrams;
@@ -49,54 +50,19 @@
 
   if (typeof lexicon === 'undefined') {
     if (typeof require !== 'undefined') {
+      async = require('async');
       lexHelpers = require('lex-helpers');
       lexicon = require('./data/lexicon.json');
       simplengrams = require('simplengrams');
       tokenizer = require('happynodetokenizer');
-    } else throw new Error('bigFive required modules not found!');
+    } else throw new Error('bigFive: required modules not found!');
   }
 
   const arr2string = lexHelpers.arr2string;
-  const calcLex = lexHelpers.calcLex;
+  const doLex = lexHelpers.doLex;
+  const doMatches = lexHelpers.doMatches;
   const getMatches = lexHelpers.getMatches;
-  const prepareMatches = lexHelpers.prepareMatches;
-
-  /**
-   * @function doMatches
-   * @param  {Object} matches   lexical matches object
-   * @param  {string} sortBy    how to sort arrays
-   * @param  {number} wordcount total word count
-   * @param  {number} places    decimal places limit
-   * @param  {string} encoding  type of lexical encoding
-   * @return {Object} sorted matches object
-   */
-  const doMatches = (matches, sortBy, wordcount, places, encoding) => {
-    const match = {};
-    match.O = prepareMatches(matches.O, sortBy, wordcount, places, encoding);
-    match.C = prepareMatches(matches.C, sortBy, wordcount, places, encoding);
-    match.E = prepareMatches(matches.E, sortBy, wordcount, places, encoding);
-    match.A = prepareMatches(matches.A, sortBy, wordcount, places, encoding);
-    match.N = prepareMatches(matches.N, sortBy, wordcount, places, encoding);
-    return match;
-  };
-
-  /**
-   * @function doLex
-   * @param  {Object} matches   lexical matches object
-   * @param  {number} places    decimal places limit
-   * @param  {string} encoding  type of lexical encoding
-   * @param  {number} wordcount total word count
-   * @return {Object} lexical values object
-   */
-  const doLex = (matches, places, encoding, wordcount) => {
-    const values = {};
-    values.O = calcLex(matches.O, 0, places, encoding, wordcount);
-    values.C = calcLex(matches.C, 0, places, encoding, wordcount);
-    values.E = calcLex(matches.E, 0, places, encoding, wordcount);
-    values.A = calcLex(matches.A, 0, places, encoding, wordcount);
-    values.N = calcLex(matches.N, 0, places, encoding, wordcount);
-    return values;
-  };
+  const itemCount = lexHelpers.itemCount;
 
   /**
   * @function bigFive
@@ -116,25 +82,26 @@
     str = str.toLowerCase().trim();
     // options defaults
     if (!opts || typeof opts !== 'object') {
+      console.warn('bigFive: using default options.');
       opts = {
         'encoding': 'binary',
         'max': Number.POSITIVE_INFINITY,
         'min': Number.NEGATIVE_INFINITY,
-        'nGrams': 'true',
+        'nGrams': [2, 3],
         'output': 'lex',
         'places': 9,
         'sortBy': 'freq',
-        'wcGrams': 'false',
+        'wcGrams': false,
       };
     }
     opts.encoding = opts.encoding || 'binary';
     opts.max = opts.max || Number.POSITIVE_INFINITY;
     opts.min = opts.min || Number.NEGATIVE_INFINITY;
-    opts.nGrams = opts.nGrams || 'true';
+    opts.nGrams = opts.nGrams || [2, 3];
     opts.output = opts.output || 'lex';
     opts.places = opts.places || 9;
     opts.sortBy = opts.sortBy || 'freq';
-    opts.wcGrams = opts.wcGrams || 'false';
+    opts.wcGrams = opts.wcGrams || false;
     const encoding = opts.encoding;
     const output = opts.output;
     const places = opts.places;
@@ -149,33 +116,63 @@
     // get wordcount before we add ngrams
     let wordcount = tokens.length;
     // get n-grams
-    if (opts.nGrams.toLowerCase() === 'true') {
-      const bigrams = arr2string(simplengrams(str, 2));
-      const trigrams = arr2string(simplengrams(str, 3));
-      tokens = tokens.concat(bigrams, trigrams);
+    if (opts.nGrams && wordcount > 2) {
+      async.each(opts.nGrams, function(n, callback) {
+        if (n < wordcount) {
+          tokens = tokens.concat(
+            arr2string(simplengrams(str, n))
+          );
+        } else {
+          console.warn('bigFive: wordcount less than n-gram value "' + n +
+              '". Ignoring.');
+        }
+        callback();
+      }, function(err) {
+        if (err) console.error(err);
+      });
     }
     // recalculate wordcount if wcGrams is true
-    if (opts.wcGrams.toLowerCase() === 'true') wordcount = tokens.length;
+    if (opts.wcGrams) wordcount = tokens.length;
+    // reduce tokens to count item
+    tokens = itemCount(tokens);
     // get matches from array
     const matches = getMatches(tokens, lexicon, opts.min, opts.max);
-    let ocean = {};
+    // define intercept values
+    const ints = {
+      O: 0,
+      C: 0,
+      E: 0,
+      A: 0,
+      N: 0,
+    };
+    // returns
     if (output === 'full') {
-      // return one object with both matches and values
-      ocean.matches = doMatches(matches, sortBy, wordcount, places, encoding);
-      ocean.values = doLex(matches, places, encoding, wordcount);
+      // return matches and values in one object
+      let full;
+      async.parallel({
+        matches: function(callback) {
+          callback(null, doMatches(matches, sortBy, wordcount, places, 
+              encoding));
+        },
+        values: function(callback) {
+          callback(null, doLex(matches, ints, places, encoding, wordcount));
+        },
+      }, function(err, results) {
+        if (err) console.error(err);
+        full = results;
+      });
+      return full;
     } else if (output === 'matches') {
       // return match object if requested
-      ocean = doMatches(matches, sortBy, wordcount, places, encoding);
+      return doMatches(matches, sortBy, wordcount, places, encoding);
     } else {
       // return lexical useage
       if (output !== 'lex') {
         console.warn('bigFive: output option ("' + output +
             '") is invalid, defaulting to "lex".');
       }
-      ocean = doLex(matches, places, encoding, wordcount);
+      return doLex(matches, places, encoding, wordcount);
     }
-    // return ocean object
-    return ocean;
   };
 
   bigFive.noConflict = function() {
