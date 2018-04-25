@@ -2,17 +2,19 @@
 
 Analyse the Five Factor Model ("Big Five") personality traits from strings.
 
-Find matches in text for the top 100 words from each of the five domains (see ./data/lexicon.json) and output a weighted lexical value for each.
+Find matches in text for the top 100 correlated words from each of the five domains (see ./data/lexicon.json) and output a weighted lexical value for each.
 
 ## Usage
 ```javascript
 const bf = require('bigfive');
 const opts = {   // These are the default options
  'encoding': 'binary',
+ 'locale': 'US',
+ 'logs': 3,
  'max': Number.POSITIVE_INFINITY,
  'min': Number.NEGATIVE_INFINITY,
  'nGrams': 'true',
- 'output': 'ocean',
+ 'output': 'lex',
  'places': 9,
  'sortBy': 'lex',
  'wcGrams': 'false',
@@ -22,7 +24,8 @@ const personality = bf(str, opts);
 console.log(personality)
 ```
 
-## Default Output Example
+## Default Output
+By default, bigFive outputs an object with O,C,E,A,N keys and lexical values:
 ```Javascript
 {
   O: 0.54912291,
@@ -40,13 +43,15 @@ The options object is optional and provides a number of controls to allow you to
 
 ### 'encoding'
 
-**String - valid options: 'binary' (default), or 'freq'**
+**String - valid options: 'binary' (default), 'freq', or 'percent**
 
-Controls how the lexical value is calculated. You probably shouldn't change this!
+Controls how the lexical value is calculated. **You probably shouldn't change this!**
 
 Binary is simply the addition of lexical weights, i.e. word1 + word2 + word3.
 
 Frequency encoding takes the overall wordcount and word frequency into account, i.e. (word frequency / word count) * weight.
+
+Percent returns the percentage of token matches in each category as a decimal, i.e. 0.48 - 48%.
 
 ### 'max' and 'min'
 
@@ -58,11 +63,25 @@ By default these are set to infinity, ensuring that no words from the lexicon ar
 
 ### 'nGrams'
 
-**String - valid options: 'true' (default) or 'false'**
+**Array - [2, 3] (default)**
 
 n-Grams are contiguous pieces of text, bi-grams being chunks of 2, tri-grams being chunks of 3, etc.
 
-Use the nGrams option to include (true) or exclude (false) n-grams. For accuracy it is recommended that n-grams are included, however including n-grams for very long strings can detrement performance.
+[2, 3] the default option, means "include bi-grams and trigrams", if you only wanted to inclue bi-grams for example, you would use [2].
+
+Use the nGrams option to control the n-gram lengths included. For accuracy it is recommended that n-grams are set to the default of [2, 3], however including n-grams for very long strings can detrement performance.
+
+### 'locale'
+**String - valid options: 'US' (default), 'GB'**
+The lexicon data is in American English (US), if the string(s) you want to analyse are in British English set the locale option to 'GB'.
+
+### 'logs'
+**Number - valid options: 0, 1, 2, 3 (default)**
+Used to control console.log, console.warn, and console.error outputs.
+* 0 = suppress all logs
+* 1 = print errors only
+* 2 = print errors and warnings
+* 3 = print all console logs
 
 ### 'output'
 
@@ -135,5 +154,5 @@ Using the Big Five lexicon data from [WWBP](http://www.wwbp.org/lexica.html) und
 ## License
 (C) 2017-18 [P. Hughes](https://www.phugh.es). All rights reserved.
 
-Shared under ther [Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported](http://creativecommons.org/licenses/by-nc-sa/3.0/) license.
+Shared under the [Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported](http://creativecommons.org/licenses/by-nc-sa/3.0/) license.
 
