@@ -1,6 +1,6 @@
 /**
  * bigFive
- * v2.0.0
+ * v2.0.1
  *
  * Analyse the Five Factor Model ("Big Five") personality traits from strings.
  *
