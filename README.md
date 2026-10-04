@@ -1,7 +1,7 @@
 > [!NOTE]
 > This project has been consolidated into **[wwbnlp — World Wellbeing NLP](https://github.com/phughesmcr/wwbnlp)**.
 > See the **[migration guide](https://github.com/phughesmcr/wwbnlp/blob/main/docs/migration.md)** for the new unified API, model IDs and intentional behavior changes.
-> This repository is archived for historical reference. Existing npm releases remain available; `wwbnlp` npm publication is pending.
+> This repository is archived for historical reference. Existing npm releases remain available. Install the unified package with `npm install wwbnlp` ([npm](https://www.npmjs.com/package/wwbnlp)).
 
 # bigFive - Node.js based Big Five personality assessment!
 
